@@ -1,3 +1,5 @@
+#include <SoftwareSerial.h>
+
 
 #include <ETH.h>
 #include <WiFi.h>
@@ -27,13 +29,15 @@ const int mqtt_port = 1883;
 const char* mqtt_Client = "Client_ID";
 const char* mqtt_username = "Token";
 const char* mqtt_password = "Secret";
-
+/*SoftwareSerial s(16,17);*/
 WiFiClient espClient;
 PubSubClient client(espClient);
 char msg[50];
 DHT dht(DHTPIN, DHTTYPE);
-
+int bufNum = 0;
+int count = 0;
 void setup() {
+  Serial2.begin(115200,SERIAL_8N1,16,17);
   Serial.begin(115200);
   pinMode(LED_BUILTIN, OUTPUT);
 
@@ -63,7 +67,7 @@ void setup() {
   dht.begin();
 }
 
-/*void callback(char* topic, byte* payload, unsigned int length) {
+void callback(char* topic, byte* payload, unsigned int length) {
     Serial.print("Message arrive [");
     Serial.print(topic);
     Serial.print("]");
@@ -85,7 +89,7 @@ void setup() {
         digitalWrite(LED1, 1);
         Serial.println(message);
     }
-}*/
+}
 
 void reconnect() {
     /*while (!client.connected()) {
@@ -103,13 +107,25 @@ void reconnect() {
 }
 
 void loop() {
-    int h = dht.readHumidity();
-    int t = dht.readTemperature();
+   
     /*int num = ;*/
     if (!client.connected()) {
         reconnect();
     }
-    
+    if (Serial2.available()){
+      int num = Serial2.read();
+      if (num==1 && bufNum == 0){
+        bufNum = 1;
+        count -= 1;
+      }
+      else if (num==0 && bufNum == 1){
+        bufNum = 0;
+      }
+      Serial.println();
+    }
+
+    int h = dht.readHumidity();
+    int t = dht.readTemperature();
     if (isnan(t) || isnan(h)) {
       Serial.println("Failed to read from DHT");
     } 
