@@ -26,9 +26,9 @@
 
 const char* mqtt_server = "broker.netpie.io";
 const int mqtt_port = 1883;
-const char* mqtt_Client = "Client_ID";
-const char* mqtt_username = "Token";
-const char* mqtt_password = "Secret";
+const char* mqtt_Client = "81cfcffa-fa5c-48a8-b9eb-168d04b14b29" ;//"dea5dfc7-6a78-4725-8c7b-16521349fb73";
+const char* mqtt_username = "BPhAZLj4NtwNH6Yc1FXQ2eihBUganDvg" ;//"cd4nvgu6bQ1wZZn7wxQvtWWTb1RdM2W5";
+const char* mqtt_password = "oRo55lxyNo)-YbGzhQDEKxJRzPG36PEf" ;//"pU6*WqViA_ZJIeL-i6-z)5EpPE0gms0A";
 /*SoftwareSerial s(16,17);*/
 WiFiClient espClient;
 PubSubClient client(espClient);
@@ -62,13 +62,13 @@ void setup() {
 
   
   client.setServer(mqtt_server, mqtt_port);
-  /*client.setCallback(callback);*/
+  client.setCallback(callback);
   
   dht.begin();
 }
 
 void callback(char* topic, byte* payload, unsigned int length) {
-    Serial.print("Message arrive [");
+    /*Serial.print("Message arrive [");
     Serial.print(topic);
     Serial.print("]");
     String message;
@@ -88,11 +88,11 @@ void callback(char* topic, byte* payload, unsigned int length) {
     else {
         digitalWrite(LED1, 1);
         Serial.println(message);
-    }
+    }*/
 }
 
 void reconnect() {
-    /*while (!client.connected()) {
+    while (!client.connected()) {
         Serial.print("Attempting MQTT connection…");
         if (client.connect(mqtt_Client, mqtt_username, mqtt_password)) {
             Serial.println("connected");
@@ -103,7 +103,7 @@ void reconnect() {
             Serial.println("try again in 5 seconds");
             delay(5000);
         }
-    }*/
+    }
 }
 
 void loop() {
@@ -112,36 +112,37 @@ void loop() {
     if (!client.connected()) {
         reconnect();
     }
-    if (Serial2.available()){
-      int num = Serial2.read();
-      if (num==1 && bufNum == 0){
-        bufNum = 1;
-        count -= 1;
-      }
-      else if (num==0 && bufNum == 1){
-        bufNum = 0;
-      }
-      Serial.println();
-    }
+    int num = 0;
 
-    int h = dht.readHumidity();
-    int t = dht.readTemperature();
-    if (isnan(t) || isnan(h)) {
+
+    float humid = dht.readHumidity();
+    float temp = dht.readTemperature();
+    humid = 3.3 ; temp = 5.5;
+    if (isnan(temp) || isnan(humid)) {
       Serial.println("Failed to read from DHT");
     } 
     else {
       Serial.print("Humidity: "); 
-      Serial.print(h);
+      Serial.print(humid);
       Serial.print(" %\t");
       Serial.print("Temperature: "); 
-      Serial.print(t);
+      Serial.print(temp);
       Serial.println(" *C");
     }
   
-    /*client.loop();
-    String data = "{\"data\": {\"num\":" + String(num)  + ", \"humidity\":" + String(humidity) + ", \"temperature\":" + String(temperature) + "}}";
+    client.loop();
+    //String data = "{\"data\": {\"amount\":" + String(num)  + ", \"humidity\":" + String(humidity) + ", \"temperature\":" + String(temperature) + "}}";
+    char msg[75] ;
+    
+    if (Serial2.available()){
+      
+       int amount = Serial2.read();
+       sprintf(msg,"{\"data\": {\"amount\":%d , \"humid\":%f , \"temp\":%f}}",amount,humid,temp);
+       //char data[50] =  "{\"data\": {\"amount\":" + itoa(amount)+ "}}" ; //+ ", \"humid\":" + String(humid) + ", \"temp\":" + String(temp)
+       client.publish("@shadow/data/update", msg);
+    }
+    /*String data = "0000";
     Serial.println(data);
-    data.toCharArray(msg, (data.length() + 1));
-    client.publish("@shadow/data/update", msg);
-    delay(2000);*/
+    data.toCharArray(msg, (data.length() + 1));*/
+    delay(2000);
    }
