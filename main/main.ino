@@ -57,7 +57,7 @@ WiFiClient espClient;
 PubSubClient client(espClient);
 char msg[50];
 DHT dht(DHTPIN, DHTTYPE);
-int amount = 40;
+int amount;
 int bufNum = 0;
 int count = 0;
 void setup() {
@@ -133,8 +133,6 @@ void loop() {
 
     float humid = dht.readHumidity();
     float temp = dht.readTemperature();
-    humid = 69;
-    temp = 69;
     if (isnan(temp) || isnan(humid)) {
       Serial.println("Failed to read from DHT");
     } 
@@ -161,6 +159,7 @@ void loop() {
       }
       amount = atoi(con);
       Serial.print(amount);
+      if (amount > 200) amount = 0;
        sprintf(msg,"{\"data\": {\"amount\":%d , \"humid\":%f , \"temp\":%f}}",amount,humid,temp);
        //char data[50] =  "{\"data\": {\"amount\":" + itoa(amount)+ "}}" ; //+ ", \"humid\":" + itoa(humid) + ", \"temp\":" + itoa(temp)
        client.publish("@shadow/data/update", msg);
@@ -170,8 +169,9 @@ void loop() {
       char *amount = strtok(cstr, ",");
        Serial.print(amount[0]); 
        Serial.print(amount); */
+       showAmount(amount);
     }
-    showAmount(amount);
+    
     delay(1000);
    }
 void showAmount(int amount){
