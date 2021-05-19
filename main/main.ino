@@ -1,7 +1,5 @@
 #include <Adafruit_SSD1306.h>
-
 #include <SoftwareSerial.h>
-
 #include <WiFi.h>
 #include <WiFiClient.h>
 #include <WiFiServer.h>
@@ -10,7 +8,6 @@
 #include "Adafruit_SSD1306.h"
 #include <SPI.h>
 #include <Wire.h>
-
 #include <PubSubClient.h>
 
 #define WIFI_STA_NAME "TrueGigatexFiber_2.4G_zSj"
@@ -22,7 +19,6 @@
 #define YPOS 1
 #define DELTAY 2
 #define OLED_RESET 4
-
 #define LOGO16_GLCD_HEIGHT 16 
 #define LOGO16_GLCD_WIDTH  16 
 
@@ -50,30 +46,30 @@ const char* mqtt_Client = "81cfcffa-fa5c-48a8-b9eb-168d04b14b29" ;//"dea5dfc7-6a
 const char* mqtt_username = "BPhAZLj4NtwNH6Yc1FXQ2eihBUganDvg" ;//"cd4nvgu6bQ1wZZn7wxQvtWWTb1RdM2W5";
 const char* mqtt_password = "oRo55lxyNo)-YbGzhQDEKxJRzPG36PEf" ;//"pU6*WqViA_ZJIeL-i6-z)5EpPE0gms0A";
 
-
 Adafruit_SSD1306 display(OLED_RESET);
-
 WiFiClient espClient;
 PubSubClient client(espClient);
-char msg[50];
 DHT dht(DHTPIN, DHTTYPE);
+
+char msg[50];
 int amount;
 int bufNum = 0;
 int count = 0;
+
 void setup() {
+  
   Serial2.begin(115200,SERIAL_8N1,16,17);
   Serial2.setTimeout(1);
   Serial.begin(115200);
   pinMode(LED_BUILTIN, OUTPUT);
-
+  
+  //set Wifi
   Serial.println();
   Serial.println();
   Serial.print("Connecting to ");
   Serial.println(WIFI_STA_NAME);
-
   WiFi.mode(WIFI_STA);
   WiFi.begin(WIFI_STA_NAME, WIFI_STA_PASS);
-
   while (WiFi.status() != WL_CONNECTED) {
     delay(500);
     Serial.print(".");
@@ -85,26 +81,38 @@ void setup() {
   Serial.println(WiFi.localIP());
   digitalWrite(LED_BUILTIN, HIGH);
 
-  
   client.setServer(mqtt_server, mqtt_port);
   client.setCallback(callback);
+  
   setupLed();
+  
   dht.begin();
-
-
 }
 
 void callback(char* topic, byte* payload, unsigned int length) {
     Serial.print("Message arrive [");
     Serial.print(topic);
     Serial.print("]");
-    Serial2.print('1');
     String message;
+    if (length==1){
+      message = message + '0';
+    }
+    /*Serial2.print('s');
+     * 
+    */
+    //message = message + 'a';
     for (int i = 0; i < length; i++) {
         message = message + (char)payload[i];
-    }
+    }/*
+    for (int i=0;i<length;i++){
+      Serial2.print(message[i]);
+    }*/
     Serial.println(message);
-
+    //Serial2.print("01");
+    Serial2.print(message);
+    //Serial2.print(message);
+     //Serial2.print(message[1]);
+     //Serial2.print(message[2]);
 }
 
 void reconnect() {
@@ -124,13 +132,12 @@ void reconnect() {
 
 void loop() {
    
-
     if (!client.connected()) {
         reconnect();
     }
     int num = 0;
-
-
+    
+    //DHT
     float humid = dht.readHumidity();
     float temp = dht.readTemperature();
     if (isnan(temp) || isnan(humid)) {
@@ -146,11 +153,11 @@ void loop() {
     }
     
     client.loop();
-    //String data = "{\"data\": {\"amount\":" + String(num)  + ", \"humidity\":" + String(humidity) + ", \"temperature\":" + String(temperature) + "}}";
     char msg[75] ;
-    //Serial2.print('1');
+    //send&receive
     if (Serial2.available()){
-      
+       //Serial2.print("stop");
+      //Serial2.print("15");
       auto tmp = Serial2.readString();
       char con[3]="";
       for (int i=0;i<3;i++){
@@ -159,23 +166,16 @@ void loop() {
       }
       amount = atoi(con);
       Serial.print(amount);
-      if (amount > 200) amount = 0;
-       sprintf(msg,"{\"data\": {\"amount\":%d , \"humid\":%f , \"temp\":%f}}",amount,humid,temp);
-       //char data[50] =  "{\"data\": {\"amount\":" + itoa(amount)+ "}}" ; //+ ", \"humid\":" + itoa(humid) + ", \"temp\":" + itoa(temp)
-       client.publish("@shadow/data/update", msg);
-
-      /*char cstr[tmp.length() + 1];
-    strcpy(cstr, tmp.c_str());
-      char *amount = strtok(cstr, ",");
-       Serial.print(amount[0]); 
-       Serial.print(amount); */
-       showAmount(amount);
+      if (amount > 500) amount = 0;
+      sprintf(msg,"{\"data\": {\"amount\":%d , \"humid\":%f , \"temp\":%f}}",amount,humid,temp);
+      client.publish("@shadow/data/update", msg);
+      showAmount(amount);
     }
-    
     delay(1000);
    }
+   
 void showAmount(int amount){
- // text display tests
+  //text display
   display.setTextSize(1);
   display.setTextColor(WHITE);
   display.setCursor(0,0);
@@ -184,28 +184,22 @@ void showAmount(int amount){
   display.println(1);
   display.setTextSize(2);
   display.setTextColor(WHITE);
-  if (amount > 100){
+  Serial.println();
+  Serial.print(amount);
+  if (amount == 0){
     display.print("Run Out!");
   }
   else{
      display.print("amount="); display.print(amount);
   }
   display.display();
-  delay(2000);
+  delay(1000);
   display.clearDisplay();
 
 }
 void setupLed(){
-    // by default, we'll generate the high voltage from the 3.3v line internally! (neat!)
   display.begin(SSD1306_SWITCHCAPVCC, 0x3C);  // initialize with the I2C addr 0x3C (for the 128x32)
-  // init done
-  
-  // Show image buffer on the display hardware.
-  // Since the buffer is intialized with an Adafruit splashscreen
-  // internally, this will display the splashscreen.
   display.display();
   delay(2000);
-
-  // Clear the buffer.
   display.clearDisplay();
 }
