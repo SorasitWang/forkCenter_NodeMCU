@@ -10,8 +10,8 @@
 #include <Wire.h>
 #include <PubSubClient.h>
 
-#define WIFI_STA_NAME "TrueGigatexFiber_2.4G_zSj"
-#define WIFI_STA_PASS "6AgW3eWr"
+#define WIFI_STA_NAME "...."
+#define WIFI_STA_PASS "...."
 #define DHTPIN 2 // what pin we're connected to
 #define DHTTYPE DHT11 // DHT 11 
 #define NUMFLAKES 10
@@ -42,9 +42,9 @@ static const unsigned char PROGMEM logo16_glcd_bmp[] =
   
 const char* mqtt_server = "broker.netpie.io";
 const int mqtt_port = 1883;
-const char* mqtt_Client = "81cfcffa-fa5c-48a8-b9eb-168d04b14b29" ;//"dea5dfc7-6a78-4725-8c7b-16521349fb73";
-const char* mqtt_username = "BPhAZLj4NtwNH6Yc1FXQ2eihBUganDvg" ;//"cd4nvgu6bQ1wZZn7wxQvtWWTb1RdM2W5";
-const char* mqtt_password = "oRo55lxyNo)-YbGzhQDEKxJRzPG36PEf" ;//"pU6*WqViA_ZJIeL-i6-z)5EpPE0gms0A";
+const char* mqtt_Client = "...."
+const char* mqtt_username = "...."
+const char* mqtt_password = "...."
 
 Adafruit_SSD1306 display(OLED_RESET);
 WiFiClient espClient;
