@@ -41,7 +41,7 @@ static const unsigned char PROGMEM logo16_glcd_bmp[] =
   B00000000, B00110000 };
   
 const char* mqtt_server = "broker.netpie.io";
-const int mqtt_port = 1883;
+const int mqtt_port = "portNO";
 const char* mqtt_Client = "...."
 const char* mqtt_username = "...."
 const char* mqtt_password = "...."
